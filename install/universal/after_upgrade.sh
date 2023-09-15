@@ -1,9 +1,15 @@
-#!/bin/sh
+#!/usr/bin/env bash
 
 systemctl daemon-reload
 
+if [ "$(systemctl is-active v2raya)" = "active" ]; then
+    echo "Restarting v2rayA service..."
+    systemctl restart v2raya
+    echo "v2rayA service restarted"
+fi
+
 ECHOLEN=$(echo -e|awk '{print length($0)}')
-if [ ${ECHOLEN} = '0' ]
+if [ "${ECHOLEN}" = '0' ]
 then
     ECHO='echo -e'
 else
@@ -12,6 +18,3 @@ fi;
     $ECHO "\033[36m******************************\033[0m"
     $ECHO "\033[36m*         Completed!         *\033[0m"
     $ECHO "\033[36m******************************\033[0m"
-    $ECHO
-    $ECHO "\033[36mWARN: v2raya@.service was deprecated; please use user service v2raya-lite.service instead.\033[0m"
-    $ECHO "\033[36m      This does NOT impact v2raya.service users.\033[0m"

@@ -34,8 +34,11 @@ type Process struct {
 	tag2WhichIndex map[string]int
 }
 
-func NewProcess(tmpl *Template, prestart func() error, poststart func() error) (process *Process, err error) {
-	process = &Process{
+func NewProcess(tmpl *Template,
+	prestart func() error, poststart func() error,
+	postUnexpectedStop func(p *Process),
+) (*Process, error) {
+	process := &Process{
 		template: tmpl,
 	}
 	if tmpl.MultiObservatory != nil {
@@ -47,7 +50,7 @@ func NewProcess(tmpl *Template, prestart func() error, poststart func() error) (
 		}
 		process.tag2WhichIndex = tag2WhichIndex
 	}
-	err = WriteV2rayConfig(tmpl.ToConfigBytes())
+	err := WriteV2rayConfig(tmpl.ToConfigBytes())
 	if err != nil {
 		return nil, err
 	}
@@ -110,7 +113,7 @@ func NewProcess(tmpl *Template, prestart func() error, poststart func() error) (
 			// canceled by v2rayA
 			return
 		}
-		defer ProcessManager.Stop(false)
+		defer postUnexpectedStop(process)
 		var t []string
 		if p != nil {
 			if p.Success() {
@@ -133,6 +136,7 @@ func NewProcess(tmpl *Template, prestart func() error, poststart func() error) (
 		}
 		portList = append(portList, port)
 	}
+	log.Trace("portList for connectivity test: %+v", portList)
 	startTime := time.Now()
 	for i := 0; i < len(portList); {
 		conn, err := net.Dial("tcp", net.JoinHostPort("127.0.0.1", portList[i]))
@@ -237,6 +241,7 @@ func StartCoreProcess(ctx context.Context) (*os.Process, error) {
 	env := append(
 		os.Environ(),
 		"V2RAY_LOCATION_ASSET="+assetDir,
+		"XRAY_LOCATION_ASSET="+assetDir,
 	)
 	memstat, err := mem.VirtualMemory()
 	if err != nil {

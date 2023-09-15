@@ -25,11 +25,9 @@
       <b-message
         v-for="v of connectedServerInfo"
         :key="v.value"
-        :title="
-          `${v.info.name}${
-            v.info.subscription_name ? ` [${v.info.subscription_name}]` : ''
-          }`
-        "
+        :title="`${v.info.name}${
+          v.info.subscription_name ? ` [${v.info.subscription_name}]` : ''
+        }`"
         :closable="false"
         size="is-small"
         :type="
@@ -69,7 +67,7 @@
             ? isCheckedRowsPingable() || isCheckedRowsDeletable()
               ? 'rgba(0, 0, 0, 0.1)'
               : 'rgba(0, 0, 0, 0.05)'
-            : 'transparent'
+            : 'transparent',
         }"
         :class="{ 'float-toolbar': overHeight }"
       >
@@ -80,7 +78,7 @@
               field: true,
               'is-info': true,
               'mobile-small': true,
-              'not-display': !overHeight && !isCheckedRowsPingable()
+              'not-display': !overHeight && !isCheckedRowsPingable(),
             }"
             :disabled="!isCheckedRowsPingable()"
             @click="handleClickLatency(true)"
@@ -94,7 +92,7 @@
               field: true,
               'is-info': true,
               'mobile-small': true,
-              'not-display': !overHeight && !isCheckedRowsPingable()
+              'not-display': !overHeight && !isCheckedRowsPingable(),
             }"
             :disabled="!isCheckedRowsPingable()"
             @click="handleClickLatency(false)"
@@ -108,7 +106,7 @@
               field: true,
               'is-delete': true,
               'mobile-small': true,
-              'not-display': !overHeight && !isCheckedRowsDeletable()
+              'not-display': !overHeight && !isCheckedRowsDeletable(),
             }"
             :disabled="!isCheckedRowsDeletable()"
             @click="handleClickDelete"
@@ -122,7 +120,7 @@
               field: true,
               'is-delete': true,
               'mobile-small': true,
-              'not-show': true
+              'not-show': true,
             }"
           >
             <i class="iconfont icon-delete" />
@@ -293,9 +291,9 @@
         </b-tab-item>
         <b-tab-item
           label="SERVER"
-          :icon="
-            `${connectedServerInTab['server'] ? ' iconfont icon-dian' : ''}`
-          "
+          :icon="`${
+            connectedServerInTab['server'] ? ' iconfont icon-dian' : ''
+          }`"
         >
           <b-field :label="`SERVER(${tableData.servers.length})`">
             <b-table
@@ -368,21 +366,23 @@
                 <div class="operate-box">
                   <b-button
                     size="is-small"
-                    :icon-left="
-                      ` github-circle iconfont ${
-                        props.row.connected
-                          ? 'icon-Link_disconnect'
-                          : 'icon-lianjie'
-                      }`
-                    "
+                    :icon-left="` github-circle iconfont ${
+                      props.row.connected
+                        ? 'icon-Link_disconnect'
+                        : 'icon-lianjie'
+                    }`"
                     :outlined="!props.row.connected"
                     :type="props.row.connected ? 'is-warning' : 'is-warning'"
                     @click="handleClickAboutConnection(props.row)"
                   >
                     {{
-                      props.row.connected
-                        ? $t("operations.cancel")
-                        : $t("operations.select")
+                      loadBalanceValid
+                        ? props.row.connected
+                          ? $t("operations.cancel")
+                          : $t("operations.select")
+                        : props.row.connected
+                        ? $t("operations.disconnect")
+                        : $t("operations.connect")
                     }}
                   </b-button>
                   <b-button
@@ -414,21 +414,17 @@
           :label="
             (sub.remarks && sub.remarks.toUpperCase()) || sub.host.toUpperCase()
           "
-          :icon="
-            `${
-              connectedServerInTab['subscriptionServer'][subi]
-                ? ' iconfont icon-dian'
-                : ''
-            }`
-          "
+          :icon="`${
+            connectedServerInTab['subscriptionServer'][subi]
+              ? ' iconfont icon-dian'
+              : ''
+          }`"
         >
           <b-field
             v-if="tab === subi + 2"
-            :label="
-              `${sub.host.toUpperCase()}(${sub.servers.length}${
-                sub.info ? ') (' : ''
-              }${sub.info})`
-            "
+            :label="`${sub.host.toUpperCase()}(${sub.servers.length}${
+              sub.info ? ') (' : ''
+            }${sub.info})`"
           >
             <b-table
               :current-page.sync="currentPage[sub.id]"
@@ -476,7 +472,7 @@
                 v-slot="props"
                 field="net"
                 :label="$t('server.protocol')"
-                style="font-size:0.9em"
+                style="font-size: 0.9em"
                 sortable
               >
                 {{ props.row.net }}
@@ -501,21 +497,23 @@
                 <div class="operate-box">
                   <b-button
                     size="is-small"
-                    :icon-left="
-                      ` github-circle iconfont ${
-                        props.row.connected
-                          ? 'icon-Link_disconnect'
-                          : 'icon-lianjie'
-                      }`
-                    "
+                    :icon-left="` github-circle iconfont ${
+                      props.row.connected
+                        ? 'icon-Link_disconnect'
+                        : 'icon-lianjie'
+                    }`"
                     :outlined="!props.row.connected"
                     :type="props.row.connected ? 'is-warning' : 'is-warning'"
                     @click="handleClickAboutConnection(props.row, subi)"
                   >
                     {{
-                      props.row.connected
-                        ? $t("operations.cancel")
-                        : $t("operations.select")
+                      loadBalanceValid
+                        ? props.row.connected
+                          ? $t("operations.cancel")
+                          : $t("operations.select")
+                        : props.row.connected
+                        ? $t("operations.disconnect")
+                        : $t("operations.connect")
                     }}
                   </b-button>
                   <b-button
@@ -609,7 +607,11 @@
             {{ $t("operations.inBatch") }}
           </button>
           <div
-            style="display:flex;justify-content:flex-end;width: -moz-available;"
+            style="
+              display: flex;
+              justify-content: flex-end;
+              width: -moz-available;
+            "
           >
             <button
               class="button"
@@ -652,7 +654,11 @@
         </section>
         <footer class="modal-card-foot">
           <div
-            style="display:flex;justify-content:flex-end;width: -moz-available;"
+            style="
+              display: flex;
+              justify-content: flex-end;
+              width: -moz-available;
+            "
           >
             <button
               class="button"
@@ -707,19 +713,19 @@ export default {
         now = now.locale("en");
       }
       return now.to(x);
-    }
+    },
   },
   props: {
     outbound: {
       type: String,
-      default: "proxy"
+      default: "proxy",
     },
     observatory: {
       type: Object,
       default() {
         return null;
-      }
-    }
+      },
+    },
   },
   data() {
     return {
@@ -732,7 +738,7 @@ export default {
       tableData: {
         servers: [],
         subscriptions: [],
-        connectedServer: []
+        connectedServer: [],
       },
       checkedRows: [],
       ready: false,
@@ -740,7 +746,7 @@ export default {
       runningState: {
         running: this.$t("common.checkRunning"),
         connectedServer: null,
-        outboundToServerName: {}
+        outboundToServerName: {},
       },
       showModalServer: false,
       which: null,
@@ -748,12 +754,17 @@ export default {
       showModalSubscription: false,
       connectedServerInTab: {
         subscriptionServer: Array(100),
-        server: false
+        server: false,
       },
       connectedServerInfo: [],
       overHeight: false,
-      clipboard: null
+      clipboard: null,
     };
+  },
+  computed: {
+    loadBalanceValid() {
+      return localStorage["loadBalanceValid"] === "true";
+    },
   },
   watch: {
     "runningState.running"() {
@@ -771,7 +782,7 @@ export default {
     },
     observatory(val) {
       for (const info of val.body.outboundStatus) {
-        this.connectedServerInfo.some(x => {
+        this.connectedServerInfo.some((x) => {
           if (
             info.which._type === x.which._type &&
             info.which.id === x.which.id &&
@@ -800,12 +811,12 @@ export default {
       if (index >= 0) {
         this.connectedServerInfo[index].selected = true;
       }
-    }
+    },
   },
   created() {
     this.$axios({
-      url: apiRoot + "/touch"
-    }).then(res => {
+      url: apiRoot + "/touch",
+    }).then((res) => {
       this.refreshTableData(res.data.data.touch, res.data.data.running);
       this.locateTabToConnected();
       this.ready = true;
@@ -819,26 +830,26 @@ export default {
       .querySelector("#QRCodeImport")
       .addEventListener("change", this.handleFileChange, false);
     this.clipboard = new ClipboardJS(".sharingAddressTag");
-    this.clipboard.on("success", e => {
+    this.clipboard.on("success", (e) => {
       this.$buefy.toast.open({
         message: this.$t("common.success"),
         type: "is-primary",
         position: "is-top",
-        queue: false
+        queue: false,
       });
       e.clearSelection();
     });
-    this.clipboard.on("error", e => {
+    this.clipboard.on("error", (e) => {
       this.$buefy.toast.open({
         message: this.$t("common.fail") + ", error:" + e.toLocaleString(),
         type: "is-warning",
         position: "is-top",
-        queue: false
+        queue: false,
       });
     });
     const that = this;
     let scrollTimer = null;
-    window.addEventListener("scroll", e => {
+    window.addEventListener("scroll", (e) => {
       clearTimeout(scrollTimer);
       setTimeout(() => {
         scrollTimer = null;
@@ -848,11 +859,11 @@ export default {
   },
   methods: {
     refreshTableData(touch, running) {
-      touch.servers.forEach(v => {
+      touch.servers.forEach((v) => {
         v.connected = false;
       });
-      touch.subscriptions.forEach(s => {
-        s.servers.forEach(v => {
+      touch.subscriptions.forEach((s) => {
+        s.servers.forEach((v) => {
           v.connected = false;
         });
       });
@@ -862,7 +873,7 @@ export default {
           running: running
             ? this.$t("common.isRunning")
             : this.$t("common.notRunning"),
-          connectedServer: touch.connectedServer
+          connectedServer: touch.connectedServer,
         });
       }
     },
@@ -878,6 +889,7 @@ export default {
       let tryCnt = 0;
       const maxTry = 5;
       const tryInterval = 500;
+
       function waitingAndLocate() {
         if (
           !document
@@ -902,7 +914,7 @@ export default {
           }
           nodes = nodes[tabIndex].querySelectorAll("table > tbody > tr");
           const node = Array.from(nodes).find(
-            node =>
+            (node) =>
               parseInt(
                 node.querySelector('td[data-label="ID"]')?.textContent
               ) === which.id
@@ -928,6 +940,7 @@ export default {
           }, 200);
         });
       }
+
       waitingAndLocate();
     },
     handleClickImportInBatch() {
@@ -959,29 +972,29 @@ export default {
           message: this.$t("import.qrcodeError"),
           type: "is-warning",
           position: "is-top",
-          queue: false
+          queue: false,
         });
         return;
       }
       const reader = new FileReader();
-      reader.onload = function(e) {
+      reader.onload = function (e) {
         // target.result 该属性表示目标对象的DataURL
         // console.log(e.target.result);
         const file = e.target.result;
         const qrcode = new Decoder();
         qrcode
           .scan(file)
-          .then(result => {
+          .then((result) => {
             console.log(result);
             that.handleClickImportConfirm(result.data);
           })
-          .catch(error => {
+          .catch((error) => {
             console.error(error);
             that.$buefy.toast.open({
               message: that.$t("import.qrcodeError"),
               type: "is-warning",
               position: "is-top",
-              queue: false
+              queue: false,
             });
           });
       };
@@ -1050,7 +1063,7 @@ export default {
       let connectedServer = this.runningState.connectedServer;
       // associate outbounds and servers
       this.runningState.outboundToServerName = {};
-      this.runningState.connectedServer?.forEach(cs => {
+      this.runningState.connectedServer?.forEach((cs) => {
         const server = locateServer(this.tableData, cs);
         if (
           this.runningState.outboundToServerName[cs.outbound] &&
@@ -1071,11 +1084,11 @@ export default {
 
       connectedServer = this.filterConnectedServer(connectedServer);
       // clear connected state
-      this.tableData.servers.forEach(v => {
+      this.tableData.servers.forEach((v) => {
         v.connected && (v.connected = false);
       });
-      this.tableData.subscriptions.forEach(s => {
-        s.servers.forEach(v => {
+      this.tableData.subscriptions.forEach((s) => {
+        s.servers.forEach((v) => {
           v.connected && (v.connected = false);
         });
       });
@@ -1093,9 +1106,10 @@ export default {
         for (const i in server) {
           let subscription_name = null;
           if (connectedServer[i]._type === "subscriptionServer") {
-            subscription_name = this.tableData.subscriptions[
-              connectedServer[i].sub
-            ].host.toUpperCase();
+            subscription_name =
+              this.tableData.subscriptions[
+                connectedServer[i].sub
+              ].host.toUpperCase();
           }
           this.connectedServerInfo.push({
             info: {
@@ -1106,11 +1120,11 @@ export default {
               outbound_tag: null,
               last_seen_time: null,
               last_error_reason: null,
-              last_try_time: null
+              last_try_time: null,
             },
             which: connectedServer[i],
             showContent: true,
-            selected: false
+            selected: false,
           });
         }
       } else {
@@ -1185,9 +1199,9 @@ export default {
         url: apiRoot + "/import",
         method: "post",
         data: {
-          url: value || this.importWhat
-        }
-      }).then(res => {
+          url: value || this.importWhat,
+        },
+      }).then((res) => {
         if (res.data.code === "SUCCESS") {
           this.refreshTableData(res.data.data.touch, res.data.data.running);
           this.updateConnectView();
@@ -1195,7 +1209,7 @@ export default {
             message: this.$t("common.success"),
             type: "is-primary",
             position: "is-top",
-            queue: false
+            queue: false,
           });
           this.showModalImport = false;
           this.showModalImportInBatch = false;
@@ -1205,7 +1219,7 @@ export default {
             message: res.data.message,
             type: "is-warning",
             position: "is-top",
-            queue: false
+            queue: false,
           });
         }
       });
@@ -1215,14 +1229,14 @@ export default {
         url: apiRoot + "/touch",
         method: "delete",
         data: {
-          touches: this.checkedRows.map(x => {
+          touches: this.checkedRows.map((x) => {
             return {
               id: x.id,
-              _type: x._type
+              _type: x._type,
             };
-          })
-        }
-      }).then(res => {
+          }),
+        },
+      }).then((res) => {
         if (res.data.code === "SUCCESS") {
           this.refreshTableData(res.data.data.touch, res.data.data.running);
           this.checkedRows = [];
@@ -1233,7 +1247,7 @@ export default {
             type: "is-warning",
             position: "is-top",
             duration: 5000,
-            queue: false
+            queue: false,
           });
         }
       });
@@ -1247,7 +1261,7 @@ export default {
         type: "is-danger",
         hasIcon: true,
         icon: " iconfont icon-alert",
-        onConfirm: () => this.deleteSelectedServers()
+        onConfirm: () => this.deleteSelectedServers(),
       });
     },
     handleClickAboutConnection(row, sub) {
@@ -1262,18 +1276,18 @@ export default {
               id: row.id,
               _type: row._type,
               sub: sub,
-              outbound: this.outbound
+              outbound: this.outbound,
             },
             cancelToken: new axios.CancelToken(function executor(c) {
               cancel = c;
-            })
-          }).then(res => {
+            }),
+          }).then((res) => {
             if (res.data.code === "SUCCESS") {
               Object.assign(this.runningState, {
                 running: res.data.data.running
                   ? this.$t("common.isRunning")
                   : this.$t("common.notRunning"),
-                connectedServer: res.data.data.touch.connectedServer
+                connectedServer: res.data.data.touch.connectedServer,
               });
               this.$nextTick(() => {
                 this.updateConnectView();
@@ -1284,7 +1298,7 @@ export default {
                 type: "is-warning",
                 position: "is-top",
                 duration: 5000,
-                queue: false
+                queue: false,
               });
               this.deleteSelectedServers();
             }
@@ -1300,16 +1314,16 @@ export default {
             id: row.id,
             _type: row._type,
             sub: sub,
-            outbound: this.outbound
-          }
-        }).then(res => {
+            outbound: this.outbound,
+          },
+        }).then((res) => {
           if (res.data.code === "SUCCESS") {
             row.connected = false;
             Object.assign(this.runningState, {
               running: res.data.data.running
                 ? this.$t("common.isRunning")
                 : this.$t("common.notRunning"),
-              connectedServer: res.data.data.touch.connectedServer
+              connectedServer: res.data.data.touch.connectedServer,
             });
             this.updateConnectView();
           } else {
@@ -1318,7 +1332,7 @@ export default {
               type: "is-warning",
               position: "is-top",
               duration: 5000,
-              queue: false
+              queue: false,
             });
           }
         });
@@ -1326,19 +1340,19 @@ export default {
     },
     handleClickLatency(ping) {
       let touches = JSON.stringify(
-        this.checkedRows.map(x => {
+        this.checkedRows.map((x) => {
           //穷举sub
-          let sub = this.tableData.subscriptions.findIndex(subscription =>
-            subscription.servers.some(y => x === y)
+          let sub = this.tableData.subscriptions.findIndex((subscription) =>
+            subscription.servers.some((y) => x === y)
           );
           return {
             id: x.id,
             _type: x._type,
-            sub: sub === -1 ? null : sub
+            sub: sub === -1 ? null : sub,
           };
         })
       );
-      this.checkedRows.forEach(x => (x.pingLatency = "testing...")); //refresh
+      this.checkedRows.forEach((x) => (x.pingLatency = "testing...")); //refresh
       // this.checkedRows = [];
       let timerTip = setTimeout(() => {
         this.$buefy.toast.open({
@@ -1346,22 +1360,22 @@ export default {
           type: "is-primary",
           position: "is-top",
           duration: 5000,
-          queue: false
+          queue: false,
         });
       }, 10 * 1200);
       this.$axios({
         url: apiRoot + (ping ? "/pingLatency" : "/httpLatency"),
         params: {
-          whiches: touches
+          whiches: touches,
         },
-        timeout: 0
+        timeout: 0,
       })
-        .then(res => {
+        .then((res) => {
           handleResponse(
             res,
             this,
             () => {
-              res.data.data.whiches.forEach(x => {
+              res.data.data.whiches.forEach((x) => {
                 let server = locateServer(this.tableData, x);
                 server.pingLatency = x.pingLatency;
               });
@@ -1373,9 +1387,9 @@ export default {
                 type: "is-warning",
                 position: "is-top",
                 queue: false,
-                duration: 5000
+                duration: 5000,
               });
-              this.checkedRows.forEach(x => (x.pingLatency = ""));
+              this.checkedRows.forEach((x) => (x.pingLatency = ""));
             }
           );
         })
@@ -1391,7 +1405,7 @@ export default {
       // CONST.SubscriptionServerType is not deletable
       return (
         this.checkedRows.length > 0 &&
-        this.checkedRows.every(x => x._type !== CONST.SubscriptionServerType)
+        this.checkedRows.every((x) => x._type !== CONST.SubscriptionServerType)
       );
     },
     isCheckedRowsPingable() {
@@ -1399,7 +1413,7 @@ export default {
       return (
         this.checkedRows.length > 0 &&
         this.checkedRows.some(
-          x =>
+          (x) =>
             x._type === CONST.ServerType ||
             x._type === CONST.SubscriptionServerType
         )
@@ -1409,7 +1423,7 @@ export default {
       const TYPE_MAP = {
         [CONST.SubscriptionServerType]: "SERVER",
         [CONST.ServerType]: "SERVER",
-        [CONST.SubscriptionType]: "SUBSCRIPTION"
+        [CONST.SubscriptionType]: "SUBSCRIPTION",
       };
       this.$axios({
         url: apiRoot + "/sharingAddress",
@@ -1418,10 +1432,10 @@ export default {
           touch: {
             id: row.id,
             _type: row._type,
-            sub
-          }
-        }
-      }).then(res => {
+            sub,
+          },
+        },
+      }).then((res) => {
         handleResponse(res, this, () => {
           this.$buefy.modal.open({
             width: 500,
@@ -1430,8 +1444,8 @@ export default {
               title: TYPE_MAP[row._type],
               sharingAddress: res.data.data.sharingAddress,
               shortDesc: row.name || row.host || row.address,
-              type: row._type
-            }
+              type: row._type,
+            },
           });
         });
       });
@@ -1442,9 +1456,9 @@ export default {
         method: "put",
         data: {
           id: row.id,
-          _type: row._type
-        }
-      }).then(res => {
+          _type: row._type,
+        },
+      }).then((res) => {
         handleResponse(res, this, () => {
           this.refreshTableData(res.data.data.touch, res.data.data.running);
           this.updateConnectView();
@@ -1453,7 +1467,7 @@ export default {
             type: "is-primary",
             position: "is-top",
             duration: 5000,
-            queue: false
+            queue: false,
           });
         });
       });
@@ -1480,17 +1494,17 @@ export default {
         method: "post",
         data: {
           url: url,
-          which: this.which
+          which: this.which,
         },
-        timeout: 0
-      }).then(res => {
+        timeout: 0,
+      }).then((res) => {
         handleResponse(res, this, () => {
           this.$buefy.toast.open({
             message: this.$t("common.success"),
             type: "is-primary",
             position: "is-top",
             duration: 3000,
-            queue: false
+            queue: false,
           });
           this.showModalServer = false;
           this.refreshTableData(res.data.data.touch, res.data.data.running);
@@ -1508,24 +1522,24 @@ export default {
         url: apiRoot + "/subscription",
         method: "patch",
         data: {
-          subscription
-        }
-      }).then(res => {
+          subscription,
+        },
+      }).then((res) => {
         handleResponse(res, this, () => {
           this.$buefy.toast.open({
             message: this.$t("common.success"),
             type: "is-primary",
             position: "is-top",
             duration: 3000,
-            queue: false
+            queue: false,
           });
           this.showModalSubscription = false;
           this.refreshTableData(res.data.data.touch, res.data.data.running);
           this.updateConnectView();
         });
       });
-    }
-  }
+    },
+  },
 };
 </script>
 
@@ -1626,6 +1640,7 @@ tr.is-connected-running {
   background: $c;
   color: findColorInvert($c);
 }
+
 tr.is-connected-not-running {
   $c: rgba(255, 69, 58, 0.4);
   background: $c;
@@ -1709,6 +1724,7 @@ $coverBackground: rgba(0, 0, 0, 0.6);
     font-size: 0.65rem;
   }
 }
+
 .b-sidebar.node-status-sidebar-reduced > .sidebar-content.is-fixed {
   z-index: 1;
   left: 1px;
@@ -1718,15 +1734,18 @@ $coverBackground: rgba(0, 0, 0, 0.6);
   line-height: 0;
   border-radius: 4px;
 }
+
 .b-sidebar.node-status-sidebar > .sidebar-content.is-fixed {
   left: 1px;
   top: 4.25rem;
   background-color: white;
   max-height: calc(100vh - 5rem);
   overflow-y: auto;
+
   .message {
     cursor: pointer;
   }
+
   .tabs:not(:last-child),
   .pagination:not(:last-child),
   .message:not(:last-child),
@@ -1745,14 +1764,17 @@ $coverBackground: rgba(0, 0, 0, 0.6);
     margin-bottom: 0.25rem;
   }
 }
+
 tr.highlight-row-connected {
   transition: background-color 0.05s linear;
   background-color: #a8cff0;
 }
+
 tr.highlight-row-disconnected {
   transition: background-color 0.05s linear;
   background-color: rgba(255, 69, 58, 0.55);
 }
+
 .click-through {
   pointer-events: none;
 }
